@@ -1,13 +1,14 @@
 import { EventEmitter } from "events";
 import { RedisManager } from "./redis.manager";
+import { Job } from "./job";
 
 export class Queue {
   private eventEmiiter: EventEmitter;
   private queueName: string;
   private redis: RedisManager;
 
-  constructor(queueName: string, redisOptions?: Object) {
-    this.queueName = queueName;
+  constructor(queueName: string, redisOptions?: object) {
+    this.queueName = `rq:${queueName}`;
     this.eventEmiiter = new EventEmitter();
     this.redis = new RedisManager(
       this.queueName,
@@ -20,7 +21,8 @@ export class Queue {
     );
   }
 
-  async add(jobData: Object, options?: Object) {
-    await this.redis.addJob(jobData);
+  async add(data: object, options?: object) {
+    const job = new Job({ data });
+    await this.redis.addJob(job);
   }
 }
