@@ -30,17 +30,30 @@ export class RedisManager {
     while (true) {
       const [_, jobId] =
         (await this.bclient.brpop(`${this.queneName}:${STATUS.WAIT}`, 0)) || [];
+      await this.redis.rpoplpush(
+        `${this.queneName}:${STATUS.WAIT}`,
+        `${this.queneName}:${STATUS.ACTIVE}`
+      );
 
       const jobKey = this.getJobKey(Number(jobId));
+      await this.redis.hset(jobKey, "processedOn", Date.now());
+
       const result = await this.redis.hgetall(jobKey);
 
       const job = new Job({
         ...result,
-        data: JSON.parse(result.data || "{}"), // JSON 문자열을 객체로 변환
+        data: JSON.parse(result.data || "{}"),
       });
 
-      console.log(job.toObject());
+      return job;
     }
+  }
+
+  async doneJob(jobId: number) {
+    await this.redis.rpoplpush(
+      `${this.queneName}:${STATUS.ACTIVE}`,
+      `${this.queneName}:${STATUS.COMPLETE}`
+    );
   }
 
   async close() {

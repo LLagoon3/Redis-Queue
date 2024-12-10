@@ -27,8 +27,10 @@ export class Queue {
     this.eventEmiiter.emit("waiting", job);
   }
 
-  async process() {
-    await this.redis.processJob();
+  async process(callBack: (job: Job, done: () => void) => void): Promise<void> {
+    const job = await this.redis.processJob();
+    const done = () => console.log("done");
+    callBack(job, done);
   }
 
   async close() {

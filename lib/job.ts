@@ -5,6 +5,7 @@ export class Job {
   private timestamp: number;
   private delay: number;
   private priority: number;
+  private processedOn: number | null;
 
   constructor({
     name = "__default__",
@@ -13,6 +14,7 @@ export class Job {
     timestamp = Date.now(),
     delay = 0,
     priority = 0,
+    processedOn = null,
   }: {
     name?: string;
     data: object | string;
@@ -20,6 +22,7 @@ export class Job {
     timestamp?: number;
     delay?: number;
     priority?: number;
+    processedOn?: number | null;
   }) {
     this.name = name;
     this.data = typeof data === "string" ? JSON.parse(data) : data;
@@ -27,23 +30,22 @@ export class Job {
     this.timestamp = timestamp;
     this.delay = delay;
     this.priority = priority;
+    this.processedOn = processedOn;
   }
 
-  toObject(): {
-    name: string;
-    data: string;
-    attempts: number;
-    timestamp: number;
-    delay: number;
-    priority: number;
-  } {
-    return {
+  toObject(): { [k: string]: string | number | null } {
+    const baseObject = {
       name: this.name,
       data: JSON.stringify(this.data),
       attempts: this.attempts,
       timestamp: this.timestamp,
       delay: this.delay,
       priority: this.priority,
+      processedOn: this.processedOn,
     };
+
+    return Object.fromEntries(
+      Object.entries(baseObject).filter(([_, value]) => value !== null)
+    );
   }
 }
