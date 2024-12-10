@@ -24,5 +24,6 @@ export class Queue {
   async add(data: object, options?: object) {
     const job = new Job({ data });
     await this.redis.addJob(job);
+    this.eventEmiiter.emit("waiting", job);
   }
 }
