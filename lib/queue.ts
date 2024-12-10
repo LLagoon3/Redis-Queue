@@ -26,4 +26,12 @@ export class Queue {
     await this.redis.addJob(job);
     this.eventEmiiter.emit("waiting", job);
   }
+
+  async process() {
+    await this.redis.processJob();
+  }
+
+  async close() {
+    this.redis.close();
+  }
 }

@@ -15,14 +15,14 @@ export class Job {
     priority = 0,
   }: {
     name?: string;
-    data: object;
+    data: object | string;
     attempts?: number;
     timestamp?: number;
     delay?: number;
     priority?: number;
   }) {
     this.name = name;
-    this.data = data;
+    this.data = typeof data === "string" ? JSON.parse(data) : data;
     this.attempts = attempts;
     this.timestamp = timestamp;
     this.delay = delay;
