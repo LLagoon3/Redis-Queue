@@ -6,6 +6,8 @@ export class Job {
   private delay: number;
   private priority: number;
   private processedOn: number | null;
+  private finishedOn: number | null;
+  private returnvalue: string | null;
 
   constructor({
     name = "__default__",
@@ -15,6 +17,8 @@ export class Job {
     delay = 0,
     priority = 0,
     processedOn = null,
+    finishedOn = null,
+    returnvalue = null,
   }: {
     name?: string;
     data: object | string;
@@ -23,6 +27,8 @@ export class Job {
     delay?: number;
     priority?: number;
     processedOn?: number | null;
+    finishedOn?: number | null;
+    returnvalue?: string | null;
   }) {
     this.name = name;
     this.data = typeof data === "string" ? JSON.parse(data) : data;
@@ -31,6 +37,8 @@ export class Job {
     this.delay = delay;
     this.priority = priority;
     this.processedOn = processedOn;
+    this.finishedOn = finishedOn;
+    this.returnvalue = returnvalue;
   }
 
   toObject(): { [k: string]: string | number | null } {
@@ -42,6 +50,8 @@ export class Job {
       delay: this.delay,
       priority: this.priority,
       processedOn: this.processedOn,
+      finishedOn: this.finishedOn,
+      returnvalue: this.returnvalue,
     };
 
     return Object.fromEntries(

@@ -26,14 +26,16 @@ export class RedisManager {
     await this.redis.lpush(`${this.queneName}:${STATUS.WAIT}`, jobId);
   }
 
-  async processJob() {
+  async processJob(): Promise<[string, Job]> {
     while (true) {
       const [_, jobId] =
         (await this.bclient.brpop(`${this.queneName}:${STATUS.WAIT}`, 0)) || [];
-      await this.redis.rpoplpush(
-        `${this.queneName}:${STATUS.WAIT}`,
-        `${this.queneName}:${STATUS.ACTIVE}`
-      );
+
+      if (!jobId) {
+        continue;
+      }
+
+      await this.redis.rpush(`${this.queneName}:${STATUS.ACTIVE}`, jobId);
 
       const jobKey = this.getJobKey(Number(jobId));
       await this.redis.hset(jobKey, "processedOn", Date.now());
@@ -45,15 +47,24 @@ export class RedisManager {
         data: JSON.parse(result.data || "{}"),
       });
 
-      return job;
+      return [jobId!, job];
     }
   }
 
-  async doneJob(jobId: number) {
-    await this.redis.rpoplpush(
-      `${this.queneName}:${STATUS.ACTIVE}`,
-      `${this.queneName}:${STATUS.COMPLETE}`
-    );
+  async completeJob(jobId: number, returnValue?: string) {
+    await this.redis.lrem(`${this.queneName}:${STATUS.ACTIVE}`, 1, jobId);
+    await this.redis.rpush(`${this.queneName}:${STATUS.COMPLETE}`, jobId);
+
+    const jobKey = this.getJobKey(jobId);
+    await this.redis.hset(jobKey, "finishedOn", Date.now());
+    returnValue
+      ? await this.redis.hset(jobKey, "returnValue", returnValue)
+      : null;
+  }
+
+  async failJob(jobId: number) {
+    await this.redis.lrem(`${this.queneName}:${STATUS.ACTIVE}`, 1, jobId);
+    await this.redis.rpush(`${this.queneName}:${STATUS.FAIL}`, jobId);
   }
 
   async close() {
