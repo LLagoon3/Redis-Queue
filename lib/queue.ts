@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
 import { RedisManager } from "./redis.manager";
 import { Job } from "./job";
+import { Worker } from "./worker";
 
 export class Queue {
   private eventEmiiter: EventEmitter;
@@ -33,17 +34,8 @@ export class Queue {
       done: (error?: null | Error, result?: any) => void
     ) => void
   ): Promise<void> {
-    const [jobId, job] = await this.redis.processJob();
-    const done = (error?: null | Error, result?: any) => {
-      if (error) {
-        this.eventEmiiter.emit("failed", job, error);
-      } else {
-        this.redis.completeJob(parseInt(jobId), result);
-        this.eventEmiiter.emit("completed", job, result);
-      }
-    };
-
-    callBack(job, done);
+    const worker = new Worker(this.redis, this.eventEmiiter, callBack);
+    worker.start();
   }
 
   async close() {

@@ -65,6 +65,9 @@ export class RedisManager {
   async failJob(jobId: number) {
     await this.redis.lrem(`${this.queneName}:${STATUS.ACTIVE}`, 1, jobId);
     await this.redis.rpush(`${this.queneName}:${STATUS.FAIL}`, jobId);
+
+    const jobKey = this.getJobKey(jobId);
+    await this.redis.hset(jobKey, "stacktrace", "Test Error");
   }
 
   async close() {

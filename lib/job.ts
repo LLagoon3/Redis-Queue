@@ -8,6 +8,7 @@ export class Job {
   private processedOn: number | null;
   private finishedOn: number | null;
   private returnvalue: string | null;
+  private stacktrace: string | null;
 
   constructor({
     name = "__default__",
@@ -19,6 +20,7 @@ export class Job {
     processedOn = null,
     finishedOn = null,
     returnvalue = null,
+    stacktrace = null,
   }: {
     name?: string;
     data: object | string;
@@ -29,6 +31,7 @@ export class Job {
     processedOn?: number | null;
     finishedOn?: number | null;
     returnvalue?: string | null;
+    stacktrace?: string | null;
   }) {
     this.name = name;
     this.data = typeof data === "string" ? JSON.parse(data) : data;
@@ -39,6 +42,7 @@ export class Job {
     this.processedOn = processedOn;
     this.finishedOn = finishedOn;
     this.returnvalue = returnvalue;
+    this.stacktrace = stacktrace;
   }
 
   toObject(): { [k: string]: string | number | null } {
@@ -52,6 +56,7 @@ export class Job {
       processedOn: this.processedOn,
       finishedOn: this.finishedOn,
       returnvalue: this.returnvalue,
+      stacktrace: this.stacktrace,
     };
 
     return Object.fromEntries(
