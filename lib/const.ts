@@ -1,3 +1,5 @@
+import { BlobOptions } from "buffer";
+
 export const STATUS = {
   WAIT: "waiting",
   ACTIVE: "active",

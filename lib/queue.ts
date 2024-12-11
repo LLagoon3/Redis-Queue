@@ -2,6 +2,7 @@ import { EventEmitter } from "events";
 import { RedisManager } from "./redis.manager";
 import { Job } from "./job";
 import { Worker } from "./worker";
+import { AddOptions } from "./types";
 
 export class Queue {
   private eventEmiiter: EventEmitter;
@@ -22,8 +23,8 @@ export class Queue {
     );
   }
 
-  async add(data: object, options?: object) {
-    const job = new Job({ data });
+  async add(data: object, options?: AddOptions) {
+    const job = new Job({ data, ...options });
     await this.redis.addJob(job);
     this.eventEmiiter.emit("waiting", job);
   }
