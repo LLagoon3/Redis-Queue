@@ -1,49 +1,87 @@
+import { AddOptions } from "./types";
+
+type JobOptions = {
+  name?: string;
+  data: object | string;
+  timestamp?: number;
+  processedOn?: number | null;
+  finishedOn?: number | null;
+  returnvalue?: string | null;
+  stacktrace?: string | null;
+} & AddOptions;
+
 export class Job {
-  private name: string;
-  private data: object;
-  private attempts: number;
-  private timestamp: number;
-  private delay: number;
-  private priority: number;
+  private name: string = "__default__";
+  private data: object = {};
+  private timestamp: number = Date.now();
+  private processedOn: number | null = null;
+  private finishedOn: number | null = null;
+  private returnvalue: string | null = null;
+  private stacktrace: string | null = null;
+  private priority: number = 0;
+  private delay: number = 0;
+  private attempts: number = 0;
+  private backoff: number = 0;
+  private timeout: number = 0;
+  private removeOnComplete: boolean = false;
+  private removeOnFail: boolean = false;
 
   constructor({
-    name = "__default__",
+    name,
     data,
-    attempts = 1,
-    timestamp = Date.now(),
-    delay = 0,
-    priority = 0,
-  }: {
-    name?: string;
-    data: object;
-    attempts?: number;
-    timestamp?: number;
-    delay?: number;
-    priority?: number;
-  }) {
-    this.name = name;
-    this.data = data;
-    this.attempts = attempts;
-    this.timestamp = timestamp;
-    this.delay = delay;
-    this.priority = priority;
+    timestamp,
+    processedOn,
+    finishedOn,
+    returnvalue,
+    stacktrace,
+    priority,
+    delay,
+    attempts,
+    backoff,
+    timeout,
+    removeOnComplete,
+    removeOnFail,
+  }: JobOptions) {
+    Object.assign(this, {
+      name: name ?? this.name,
+      data: typeof data === "string" ? JSON.parse(data) : data,
+      timestamp: timestamp ?? this.timestamp,
+      processedOn,
+      finishedOn,
+      returnvalue,
+      stacktrace,
+      priority: priority ?? this.priority,
+      delay: delay ?? this.delay,
+      attempts: attempts ?? this.attempts,
+      backoff: backoff ?? this.backoff,
+      timeout: timeout ?? this.timeout,
+      removeOnComplete: removeOnComplete ?? this.removeOnComplete,
+      removeOnFail: removeOnFail ?? this.removeOnFail,
+    });
   }
 
-  toObject(): {
-    name: string;
-    data: string;
-    attempts: number;
-    timestamp: number;
-    delay: number;
-    priority: number;
-  } {
-    return {
+  toObject(): Record<string, string | number | boolean | null> {
+    const objectRepresentation = {
       name: this.name,
       data: JSON.stringify(this.data),
-      attempts: this.attempts,
       timestamp: this.timestamp,
-      delay: this.delay,
+      processedOn: this.processedOn,
+      finishedOn: this.finishedOn,
+      returnvalue: this.returnvalue,
+      stacktrace: this.stacktrace,
       priority: this.priority,
+      delay: this.delay,
+      attempts: this.attempts,
+      backoff: this.backoff,
+      timeout: this.timeout,
+      removeOnComplete: this.removeOnComplete,
+      removeOnFail: this.removeOnFail,
     };
+
+    return Object.fromEntries(
+      Object.entries(objectRepresentation).filter(
+        ([_, value]) => value !== null
+      )
+    );
   }
 }
