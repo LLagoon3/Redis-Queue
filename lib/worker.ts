@@ -22,14 +22,27 @@ export class Worker {
       const done = (error?: null | Error, result?: any) => {
         if (error) {
           this.eventEmitter.emit("failed", job, error);
+          this.redis.failJob(parseInt(jobId), error.message);
         } else {
           this.redis.completeJob(parseInt(jobId), result);
           this.eventEmitter.emit("completed", job, result);
         }
       };
 
+      const abortController = new AbortController();
+      const signal = abortController.signal;
+
       try {
-        this.processCallback(job, done);
+        const timeout = new Promise((_, reject) => {
+          setTimeout(() => {
+            abortController.abort();
+            reject(new Error("Task Timeout"));
+          }, 1000);
+        });
+
+        const task = this.processCallback(job, done, signal);
+
+        await Promise.race([task, timeout]);
       } catch (error) {
         done(error as Error);
       }
