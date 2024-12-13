@@ -2,7 +2,7 @@ import { EventEmitter } from "events";
 import { RedisManager } from "./redis.manager";
 import { Job } from "./job";
 import { Worker } from "./worker";
-import { AddOptions } from "./types";
+import { AddOptions, ProcessCallback } from "./types";
 
 export class Queue {
   private eventEmiiter: EventEmitter;
@@ -29,13 +29,23 @@ export class Queue {
     this.eventEmiiter.emit("waiting", job);
   }
 
+  process(concurrency: number, callback: ProcessCallback): void;
+
+  process(callback: ProcessCallback): void;
+
   async process(
-    callBack: (
-      job: Job,
-      done: (error?: null | Error, result?: any) => void
-    ) => void
+    arg1: number | ProcessCallback,
+    arg2?: ProcessCallback | boolean
   ): Promise<void> {
-    const worker = new Worker(this.redis, this.eventEmiiter, callBack);
+    const [concurrency, callback] =
+      typeof arg1 === "number" ? [arg1, arg2 as ProcessCallback] : [1, arg1];
+
+    const worker = new Worker(
+      this.redis,
+      this.eventEmiiter,
+      concurrency,
+      callback
+    );
     worker.start();
   }
 

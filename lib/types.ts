@@ -1,3 +1,5 @@
+import { Job } from "./job";
+
 export type AddOptions = {
   priority?: number;
   delay?: number;
@@ -7,3 +9,10 @@ export type AddOptions = {
   removeOnComplete?: boolean;
   removeOnFail?: boolean;
 };
+
+export type ProcessDoneCallback = (err?: Error | null) => void;
+export type ProcessCallback = (
+  job: Job,
+  done?: ProcessDoneCallback,
+  signal?: AbortSignal
+) => void | Promise<void>;

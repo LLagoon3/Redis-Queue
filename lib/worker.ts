@@ -1,15 +1,14 @@
 import { EventEmitter } from "events";
 import { RedisManager } from "./redis.manager";
 import { Job } from "./job";
+import { ProcessCallback } from "./types";
 
 export class Worker {
   constructor(
     private redis: RedisManager,
     private eventEmitter: EventEmitter,
-    private processCallback: (
-      job: Job,
-      done: (error?: null | Error, result?: any) => void
-    ) => void
+    private concurrency: number,
+    private processCallback: ProcessCallback
   ) {}
 
   async start(): Promise<void> {
@@ -30,8 +29,7 @@ export class Worker {
       };
 
       try {
-        // 작업 처리
-        await this.processCallback(job, done);
+        this.processCallback(job, done);
       } catch (error) {
         done(error as Error);
       }
